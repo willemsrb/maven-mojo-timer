@@ -35,23 +35,29 @@ For example:
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time: 6.819 s
-[INFO] Finished at: 2017-05-29T13:39:20+02:00
-[INFO] Final Memory: 31M/632M
+[INFO] Total time: 50.663 s (Wall Clock)
+[INFO] Finished at: 2017-05-29T13:52:57+02:00
+[INFO] Final Memory: 52M/919M
 [INFO] ------------------------------------------------------------------------
-[INFO] Execution times:
-[INFO] [ 2.145 sec] executions:   1, min:  2.145 sec, max:  2.145 sec, avg:  2.145 sec - org.apache.maven.plugins:maven surefire-plugin:test@default-test
-[INFO] [ 1.561 sec] executions:   1, min:  1.561 sec, max:  1.561 sec, avg:  1.561 sec - org.apache.maven.plugins:maven-javadoc-plugin:jar@attach-javadocs
-[INFO] [ 0.620 sec] executions:   1, min:  0.620 sec, max:  0.620 sec, avg:  0.620 sec - org.apache.maven.plugins:maven-compiler-plugin:compile@default-compile
-[INFO] [ 0.242 sec] executions:   1, min:  0.242 sec, max:  0.242 sec, avg:  0.242 sec - org.apache.maven.plugins:maven-resources-plugin:resources@default-resources
-[INFO] [ 0.225 sec] executions:   1, min:  0.225 sec, max:  0.225 sec, avg:  0.225 sec - maven:dependency-resolution
-[INFO] [ 0.196 sec] executions:   1, min:  0.196 sec, max:  0.196 sec, avg:  0.196 sec - org.apache.maven.plugins:maven-source-plugin:jar-no-fork@attach-sources
-[INFO] [ 0.192 sec] executions:   1, min:  0.192 sec, max:  0.192 sec, avg:  0.192 sec - org.apache.maven.plugins:maven-failsafe-plugin:verify@integration-test
-[INFO] [ 0.139 sec] executions:   1, min:  0.139 sec, max:  0.139 sec, avg:  0.139 sec - org.apache.maven.plugins:maven-failsafe-plugin:integration-test@integration-test
-[INFO] [ 0.077 sec] executions:   1, min:  0.077 sec, max:  0.077 sec, avg:  0.077 sec - org.apache.maven.plugins:maven-install-plugin:install@default-install
-[INFO] [ 0.043 sec] executions:   1, min:  0.043 sec, max:  0.043 sec, avg:  0.043 sec - org.apache.maven.plugins:maven-gpg-plugin:sign@sign-artifacts
-[INFO] [ 0.016 sec] executions:   1, min:  0.016 sec, max:  0.016 sec, avg:  0.016 sec - maven:settings-building
-[INFO] [ 0.011 sec] executions:   1, min:  0.011 sec, max:  0.011 sec, avg:  0.011 sec - org.apache.maven.plugins:maven-resources-plugin:testResources@default-testResources
-[INFO] [ 0.010 sec] executions:   1, min:  0.010 sec, max:  0.010 sec, avg:  0.010 sec - org.apache.maven.plugins:maven-compiler-plugin:testCompile@default-testCompile
-[INFO] ------------------------------------------------------------------------
+[WARNING] The requested profile "docker" could not be activated because it does not exist.
+[INFO] [29.573 sec] executions:  15, min:  0.776 sec, max:  7.070 sec, avg:  1.971 sec - org.apache.maven.plugins:maven-compiler-plugin:compile@default-compile
+[INFO] [19.709 sec] executions:  15, min:  0.001 sec, max:  2.953 sec, avg:  1.313 sec - org.apache.maven.plugins:maven-compiler-plugin:testCompile@default-testCompile
+[INFO] [ 7.721 sec] executions:   1, min:  7.721 sec, max:  7.721 sec, avg:  7.721 sec - org.apache.maven.plugins:maven-surefire-plugin:test@generate-dbunit-resources
+[INFO] [ 4.382 sec] executions:  21, min:  0.074 sec, max:  0.397 sec, avg:  0.208 sec - maven:dependency-resolution
+[INFO] [ 1.852 sec] executions:   1, min:  1.852 sec, max:  1.852 sec, avg:  1.852 sec - org.apache.maven.plugins:maven-plugin-plugin:descriptor@default-descriptor
+[INFO] [ 1.582 sec] executions:  40, min:  0.001 sec, max:  0.270 sec, avg:  0.039 sec - org.apache.maven.plugins:maven-clean-plugin:clean@default-clean
+[INFO] [ 1.505 sec] executions:  40, min:  0.012 sec, max:  0.288 sec, avg:  0.037 sec - org.apache.maven.plugins:maven-install-plugin:install@default-install
+[INFO] [ 0.955 sec] executions:   1, min:  0.955 sec, max:  0.955 sec, avg:  0.955 sec - org.apache.maven.plugins:maven-plugin-plugin:helpmojo@help-descriptor
+[INFO] [ 0.846 sec] executions:  14, min:  0.012 sec, max:  0.141 sec, avg:  0.060 sec - org.apache.maven.plugins:maven-jar-plugin:jar@default-jar
+[INFO] [ 0.807 sec] executions:  21, min:  0.001 sec, max:  0.384 sec, avg:  0.038 sec - org.apache.maven.plugins:maven-jar-plugin:test-jar@jar-test-jar
+[INFO] [ 0.742 sec] executions:   1, min:  0.742 sec, max:  0.742 sec, avg:  0.742 sec - org.apache.maven.plugins:maven-war-plugin:war@default-war
+[INFO] [ 0.436 sec] executions:  21, min:  0.002 sec, max:  0.292 sec, avg:  0.020 sec - org.apache.maven.plugins:maven-failsafe-plugin:integration-test@integration-test
+[INFO] [ 0.334 sec] executions:  15, min:  0.001 sec, max:  0.153 sec, avg:  0.022 sec - org.apache.maven.plugins:maven-resources-plugin:resources@default-resources
+[INFO] [ 0.280 sec] executions:  15, min:  0.002 sec, max:  0.131 sec, avg:  0.018 sec - org.apache.maven.plugins:maven-surefire-plugin:test@default-test
+[INFO] [ 0.149 sec] executions:   1, min:  0.149 sec, max:  0.149 sec, avg:  0.149 sec - org.codehaus.mojo:build-helper-maven-plugin:add-source@add-enums
+[INFO] [ 0.130 sec] executions:  15, min:  0.002 sec, max:  0.026 sec, avg:  0.008 sec - org.apache.maven.plugins:maven-resources-plugin:testResources@default-testResources
+[INFO] [ 0.063 sec] executions:  21, min:  0.001 sec, max:  0.013 sec, avg:  0.003 sec - org.apache.maven.plugins:maven-failsafe-plugin:verify@integration-test
+[INFO] [ 0.021 sec] executions:   1, min:  0.021 sec, max:  0.021 sec, avg:  0.021 sec - org.apache.maven.plugins:maven-resources-plugin:copy-resources@copy-dbunit-resources
+[INFO] [ 0.004 sec] executions:   1, min:  0.004 sec, max:  0.004 sec, avg:  0.004 sec - org.apache.maven.plugins:maven-plugin-plugin:addPluginArtifactMetadata@default-addPluginArtifactMetadata
+[INFO] [ 0.002 sec] executions:   1, min:  0.002 sec, max:  0.002 sec, avg:  0.002 sec - org.codehaus.mojo:build-helper-maven-plugin:add-resource@add-resource
 ```
