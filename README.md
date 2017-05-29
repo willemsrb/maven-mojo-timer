@@ -21,14 +21,14 @@ Add a `.mvn/extension.xml` file to your project containing
 ## Report
 After the build the extension reports the cumulative time spent by various parts of the build:
 
-| name                                                    | description              |
-|---------------------------------------------------------|----------------------- --|
-| maven:settings-building                                 | Build setup (settings)   |
-| maven:toolchains-building                               | Build setup (toolchains) |
-| maven:dependency-resolution                             | Dependency resolution    |
-| maven:repository:artifact-download                      | Downloading artifacts    |
-| maven:repository:artifact-deployment                    | Deploying artifacts      |
-| &lt;groupId>:&lt;artifactId>:&lt;goal>:&lt;executionId> | Mojo executions          |
+name                                                    | description
+--------------------------------------------------------|-------------------------
+maven:settings-building                                 | Build setup (settings)
+maven:toolchains-building                               | Build setup (toolchains)
+maven:dependency-resolution                             | Dependency resolution
+maven:repository:artifact-download                      | Downloading artifacts
+maven:repository:artifact-deployment                    | Deploying artifacts
+&lt;groupId>:&lt;artifactId>:&lt;goal>:&lt;executionId> | Mojo executions
 
 For example:
 ```
