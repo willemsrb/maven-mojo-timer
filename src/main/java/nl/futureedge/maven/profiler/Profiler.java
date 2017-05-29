@@ -63,7 +63,7 @@ public final class Profiler extends AbstractEventSpy {
             LOGGER.info("------------------------------------------------------------------------");
             LOGGER.info("Unsupported events encountered:");
             for (String unsupportedEvent : unsupportedEvents) {
-                LOGGER.info(" - " + unsupportedEvent);
+                LOGGER.info(" - {}", unsupportedEvent);
             }
         }
         LOGGER.info("------------------------------------------------------------------------");
