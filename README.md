@@ -13,7 +13,7 @@ Add a `.mvn/extension.xml` file to your project containing
   <extension>
     <groupId>nl.future-edge</groupId>
     <artifactId>maven-mojo-timer</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
   </extension>
 </extensions>
 ```
