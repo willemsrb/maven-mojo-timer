@@ -1,4 +1,4 @@
-# Maven Mojo Timer [![Build Status](https://travis-ci.org/willemsrb/profiler-maven-plugin.svg?branch=master)](https://travis-ci.org/willemsrb/profiler-maven-plugin) [![Quality Gate](https://sonarqube.com/api/badges/gate?key=nl.future-edge:profiler-maven-plugin)](https://sonarqube.com/dashboard/index?id=nl.future-edge%3Aprofiler-maven-plugin) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.future-edge/profiler-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.future-edge/profiler-maven-plugin)
+# Maven Mojo Timer [![Build Status](https://travis-ci.org/willemsrb/maven-mojo-timer.svg?branch=master)](https://travis-ci.org/willemsrb/maven-mojo-timer) [![Quality Gate](https://sonarqube.com/api/badges/gate?key=nl.future-edge:maven-mojo-timer)](https://sonarqube.com/dashboard/index?id=nl.future-edge%3Amaven-mojo-timer) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.future-edge/maven-mojo-timer/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.future-edge/maven-mojo-timer)
 Profiles the execution time of a maven build
 
 ## Usage
