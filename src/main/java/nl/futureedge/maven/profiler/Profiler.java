@@ -46,7 +46,7 @@ public final class Profiler extends AbstractEventSpy {
     private SortedSet<String> unsupportedEvents = Collections.synchronizedSortedSet(new TreeSet<>());
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (!executions.isEmpty()) {
             LOGGER.info("Execution times:");
             final SortedMap<Long, String> displays = new TreeMap<>(Comparator.reverseOrder());
@@ -61,7 +61,7 @@ public final class Profiler extends AbstractEventSpy {
 
         if (!unsupportedEvents.isEmpty()) {
             LOGGER.info("------------------------------------------------------------------------");
-            LOGGER.info("Unsupported events encountered: ");
+            LOGGER.info("Unsupported events encountered:");
             for (String unsupportedEvent : unsupportedEvents) {
                 LOGGER.info(" - " + unsupportedEvent);
             }
@@ -81,7 +81,7 @@ public final class Profiler extends AbstractEventSpy {
         }
 
         final long average = total / values.size();
-        final String display = String.format("[%1$s] %2$s (executions: %3$d, fastest: %4$s, slowest: %5$s, average: %6$s)",
+        final String display = String.format("[%1$s] executions: %3$3d, min: %4$s, max: %5$s, avg: %6$s - %2$s",
                 format(total), key, values.size(), format(fastest), format(slowest), format(average));
 
         displays.put(total, display);
@@ -107,7 +107,7 @@ public final class Profiler extends AbstractEventSpy {
             final long durationInMinutes = durationInSeconds / 60;
             if(durationInMinutes < 100) {
                 final long seconds = durationInSeconds % 60;
-                return String.format("%1$3d:%2$02d min", durationInSeconds, seconds);
+                return String.format("%1$3d:%2$02d min", durationInMinutes, seconds);
             } else {
                 final long durationInHours = durationInMinutes / 60;
                 final long minutes = durationInMinutes % 60;
@@ -117,7 +117,7 @@ public final class Profiler extends AbstractEventSpy {
     }
 
     @Override
-    public void onEvent(final Object event) throws Exception {
+    public void onEvent(final Object event) {
         if (event instanceof RepositoryEvent) {
             handleRepositoryEvent((RepositoryEvent) event);
         } else if (event instanceof ExecutionEvent) {
@@ -192,7 +192,7 @@ public final class Profiler extends AbstractEventSpy {
         }
 
         if (ExecutionEvent.Type.MojoSucceeded.equals(event.getType())
-                || ExecutionEvent.Type.MojoSucceeded.equals(event.getType())) {
+                || ExecutionEvent.Type.MojoFailed.equals(event.getType())) {
             final long duration = System.currentTimeMillis() - startMojoExecution.get();
             register(event.getMojoExecution().getGroupId()
                             + ":" + event.getMojoExecution().getArtifactId()
