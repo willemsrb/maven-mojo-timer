@@ -39,7 +39,6 @@ For example:
 [INFO] Finished at: 2017-05-29T13:52:57+02:00
 [INFO] Final Memory: 52M/919M
 [INFO] ------------------------------------------------------------------------
-[WARNING] The requested profile "docker" could not be activated because it does not exist.
 [INFO] [29.573 sec] executions:  15, min:  0.776 sec, max:  7.070 sec, avg:  1.971 sec - org.apache.maven.plugins:maven-compiler-plugin:compile@default-compile
 [INFO] [19.709 sec] executions:  15, min:  0.001 sec, max:  2.953 sec, avg:  1.313 sec - org.apache.maven.plugins:maven-compiler-plugin:testCompile@default-testCompile
 [INFO] [ 7.721 sec] executions:   1, min:  7.721 sec, max:  7.721 sec, avg:  7.721 sec - org.apache.maven.plugins:maven-surefire-plugin:test@generate-dbunit-resources
