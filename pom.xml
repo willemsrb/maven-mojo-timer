@@ -9,18 +9,17 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>Maven Mojo Timer</name>
-    <description>Simple JMX protocol (that works without RMI)</description>
+    <description>Maven extension that profiles the time spent in various parts of a maven build.</description>
     <url>https://github.com/willemsrb/maven-mojo-timer</url>
     <inceptionYear>2017</inceptionYear>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
     <issueManagement>
         <url>https://github.com/willemsrb/maven-mojo-timer/issues</url>
