@@ -25,7 +25,9 @@ deploy:
   provider: releases
   api_key: $GITHUB_OAUTH_TOKEN
   file_glob: true
-  file: 'target/simple-jmx-*.jar'
+  file: 
+    - 'target/maven-mojo-timer-*.jar'
+    - 'target/maven-mojo-timer-*.asc'
   skip_cleanup: true
   on:
     tags: true
