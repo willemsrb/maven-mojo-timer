@@ -5,7 +5,7 @@
     <groupId>nl.future-edge</groupId>
     <artifactId>maven-mojo-timer</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>Maven Mojo Timer</name>
     <description>Maven extension that profiles the time spent in various parts of a maven build.</description>
@@ -31,7 +31,7 @@
     <scm>
         <url>https://github.com/willemsrb/maven-mojo-timer</url>
         <connection>scm:git:https://github.com/willemsrb/maven-mojo-timer.git</connection>
-        <tag>maven-mojo-timer-1.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <developers>
