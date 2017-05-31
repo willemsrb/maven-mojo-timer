@@ -79,8 +79,6 @@ public final class ReflectionUtils {
             final Class<?> argumentType = constructor.getParameterTypes()[i];
 
             if (!argumentType.isInstance(argument)) {
-                // System.out.println("Constructor verwijderd. Argumenttype: " + argumentType.getName() +
-                // ", gegeven argument: " + argument.getClass().getName());
                 iterator.remove();
             }
         }
