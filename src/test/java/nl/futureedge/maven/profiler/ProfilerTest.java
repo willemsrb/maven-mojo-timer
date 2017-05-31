@@ -10,21 +10,12 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.test.appender.ListAppender;
 import org.apache.maven.execution.ExecutionEvent;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.project.DependencyResolutionRequest;
-import org.apache.maven.project.DependencyResolutionResult;
-import org.apache.maven.settings.building.SettingsBuildingRequest;
-import org.apache.maven.settings.building.SettingsBuildingResult;
-import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
-import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositoryEvent;
-import org.eclipse.aether.RepositorySystemSession;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class ProfilerTest {
 
@@ -32,14 +23,14 @@ public class ProfilerTest {
 
     @Test
     public void testEvents() throws ReflectiveOperationException {
-        subject.onEvent(Mockito.mock(SettingsBuildingRequest.class));
-        subject.onEvent(Mockito.mock(SettingsBuildingResult.class));
-        subject.onEvent(Mockito.mock(ToolchainsBuildingRequest.class));
-        subject.onEvent(Mockito.mock(ToolchainsBuildingResult.class));
-        subject.onEvent(Mockito.mock(DependencyResolutionRequest.class));
-        subject.onEvent(Mockito.mock(DependencyResolutionResult.class));
-        subject.onEvent(Mockito.mock(MavenExecutionRequest.class));
-        subject.onEvent(Mockito.mock(MavenExecutionResult.class));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.settings.building.DefaultSettingsBuildingRequest"));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.settings.building.DefaultSettingsBuildingResult", null, null));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.toolchain.building.DefaultToolchainsBuildingRequest"));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.toolchain.building.DefaultToolchainsBuildingResult", null, null));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.project.DefaultDependencyResolutionRequest"));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.project.DefaultDependencyResolutionResult"));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.execution.DefaultMavenExecutionRequest"));
+        subject.onEvent(ReflectionUtils.instantiate("org.apache.maven.execution.DefaultMavenExecutionResult"));
 
         subject.onEvent(repositoryEvent(RepositoryEvent.EventType.ARTIFACT_DOWNLOADING));
         subject.onEvent(repositoryEvent(RepositoryEvent.EventType.ARTIFACT_DOWNLOADED));
@@ -121,22 +112,19 @@ public class ProfilerTest {
     }
 
     private RepositoryEvent repositoryEvent(RepositoryEvent.EventType type) {
-        RepositoryEvent.Builder builder = new RepositoryEvent.Builder(Mockito.mock(RepositorySystemSession.class), type);
+        RepositoryEvent.Builder builder = new RepositoryEvent.Builder(new DefaultRepositorySystemSession(), type);
         return builder.build();
     }
 
 
-    private Object executionEvent(ExecutionEvent.Type type, String groupId, String artifactId, String goal, String executionId) {
+    private Object executionEvent(ExecutionEvent.Type type, String groupId, String artifactId, String goal, String executionId)
+            throws ReflectiveOperationException {
         Plugin plugin = new Plugin();
         plugin.setGroupId(groupId);
         plugin.setArtifactId(artifactId);
 
         MojoExecution mojoExecution = new MojoExecution(plugin, goal, executionId);
 
-        ExecutionEvent event = Mockito.mock(ExecutionEvent.class);
-        Mockito.when(event.getType()).thenReturn(type);
-        Mockito.when(event.getMojoExecution()).thenReturn(mojoExecution);
-
-        return event;
+        return ReflectionUtils.instantiate("org.apache.maven.lifecycle.internal.DefaultExecutionEvent", type, null, mojoExecution, null);
     }
 }

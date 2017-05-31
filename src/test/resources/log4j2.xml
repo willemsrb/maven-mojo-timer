@@ -13,5 +13,6 @@
         </Root>
 
         <Logger name="nl.futureedge.maven.profiler.Profiler" level="DEBUG" />
+        <Logger name="nl.futureedge.maven.profiler.ReflectionUtils" level="INFO" />
     </Loggers>
 </Configuration>

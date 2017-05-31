@@ -113,7 +113,7 @@ public final class Profiler extends AbstractEventSpy {
                 starts.get().put(event.getIdentifier(), System.currentTimeMillis());
             } else {
                 if (starts.get().containsKey(event.getIdentifier())) {
-                    final long duration = System.currentTimeMillis() - starts.get().get(event.getIdentifier());
+                    final long duration = System.currentTimeMillis() - starts.get().remove(event.getIdentifier());
                     executions.computeIfAbsent(event.getIdentifier(), key -> Collections.synchronizedList(new ArrayList<>()));
                     executions.get(event.getIdentifier()).add(duration);
                 } else {
