@@ -30,7 +30,6 @@ public class ProfilerTest {
 
     private Profiler subject = new Profiler();
 
-
     @Test
     public void testEvents() throws ReflectiveOperationException {
         subject.onEvent(Mockito.mock(SettingsBuildingRequest.class));
@@ -62,6 +61,7 @@ public class ProfilerTest {
         Field executionsField = Profiler.class.getDeclaredField("executions");
         executionsField.setAccessible(true);
         SortedMap<String, List<Long>> executions = (SortedMap<String, List<Long>>) executionsField.get(subject);
+        System.out.println("Executions: " + executions);
         Assert.assertEquals(7, executions.size());
         Assert.assertEquals(1, executions.get("maven:settings-building").size());
         Assert.assertEquals(1, executions.get("maven:toolchains-building").size());
@@ -75,6 +75,7 @@ public class ProfilerTest {
         Field unsupportedEventsField = Profiler.class.getDeclaredField("unsupportedEvents");
         unsupportedEventsField.setAccessible(true);
         SortedSet<String> unsupportedEvents = (SortedSet<String>) unsupportedEventsField.get(subject);
+        System.out.println("Unsupported events: " + unsupportedEvents);
         Assert.assertEquals(1, unsupportedEvents.size());
         Assert.assertTrue(unsupportedEvents.contains("java.lang.String"));
 

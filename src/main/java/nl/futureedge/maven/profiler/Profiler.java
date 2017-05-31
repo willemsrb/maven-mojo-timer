@@ -3,8 +3,11 @@ package nl.futureedge.maven.profiler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -12,16 +15,6 @@ import java.util.TreeSet;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.eventspy.AbstractEventSpy;
-import org.apache.maven.execution.ExecutionEvent;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.project.DependencyResolutionRequest;
-import org.apache.maven.project.DependencyResolutionResult;
-import org.apache.maven.settings.building.SettingsBuildingRequest;
-import org.apache.maven.settings.building.SettingsBuildingResult;
-import org.apache.maven.toolchain.building.ToolchainsBuildingRequest;
-import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
-import org.eclipse.aether.RepositoryEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,14 +27,7 @@ public final class Profiler extends AbstractEventSpy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Profiler.class.getName());
 
-    private ThreadLocal<Long> startSettingsBuilding = new ThreadLocal<>();
-    private ThreadLocal<Long> startToolchainBuilding = new ThreadLocal<>();
-    private ThreadLocal<Long> startDependencyResolution = new ThreadLocal<>();
-    private ThreadLocal<Long> startArtifactDownloading = new ThreadLocal<>();
-    private ThreadLocal<Long> startArtifactDeploying = new ThreadLocal<>();
-
-    private ThreadLocal<Long> startMojoExecution = new ThreadLocal<>();
-
+    private ThreadLocal<Map<String, Long>> starts = ThreadLocal.withInitial(HashMap::new);
     private SortedMap<String, List<Long>> executions = Collections.synchronizedSortedMap(new TreeMap<>());
     private SortedSet<String> unsupportedEvents = Collections.synchronizedSortedSet(new TreeSet<>());
 
@@ -90,120 +76,176 @@ public final class Profiler extends AbstractEventSpy {
     /**
      * Format a duration to a fixed length.
      * <ul>
-     *     <li>XX.XXX sec (for under 100 seconds)</li>
-     *     <li> XX:XX min (for under 100 minutes)</li>
-     *     <li>XXX:XX hrs (for the rest)</li>
+     * <li>XX.XXX sec (for under 100 seconds)</li>
+     * <li> XX:XX min (for under 100 minutes)</li>
+     * <li>XXX:XX hrs (for the rest)</li>
      * </ul>
      * @param durationInMillis duration in milliseconds
-     * @return
+     * @return formatted duration
      */
     private String format(final long durationInMillis) {
         final long durationInSeconds = durationInMillis / 1000;
-        if(durationInSeconds < 100) {
+        if (durationInSeconds < 100) {
             // Under 100 seconds
             final long millis = durationInMillis % 1000;
             return String.format("%1$2d.%2$03d sec", durationInSeconds, millis);
         } else {
             final long durationInMinutes = durationInSeconds / 60;
-            if(durationInMinutes < 100) {
+            if (durationInMinutes < 100) {
                 final long seconds = durationInSeconds % 60;
                 return String.format("%1$3d:%2$02d min", durationInMinutes, seconds);
             } else {
                 final long durationInHours = durationInMinutes / 60;
                 final long minutes = durationInMinutes % 60;
                 return String.format("%1$3d:%2$02d hrs", durationInHours, minutes);
-           }
+            }
         }
     }
 
     @Override
-    public void onEvent(final Object event) {
-        if (event instanceof RepositoryEvent) {
-            handleRepositoryEvent((RepositoryEvent) event);
-        } else if (event instanceof ExecutionEvent) {
-            handleExecutionEvent((ExecutionEvent) event);
-        } else if (event instanceof SettingsBuildingRequest
-                || event instanceof SettingsBuildingResult) {
-            handleSettingsBuilding(event);
-        } else if (event instanceof ToolchainsBuildingRequest
-                || event instanceof ToolchainsBuildingResult) {
-            handToolchainsBuilding(event);
-        } else if (event instanceof DependencyResolutionRequest
-                || event instanceof DependencyResolutionResult) {
-            handleDependencyResolution(event);
-        } else if (event instanceof MavenExecutionRequest
-                || event instanceof MavenExecutionResult) {
-            // Ignore as this is the overall build execution
+    public void onEvent(final Object object) {
+        Event event = determineEvent(object);
+        if (event == null) {
+            unsupportedEvents.add(object.getClass().getName());
+
+        } else if (event.getIdentifier() != null) {
+            if (event.isStart()) {
+                starts.get().put(event.getIdentifier(), System.currentTimeMillis());
+            } else {
+                if (starts.get().containsKey(event.getIdentifier())) {
+                    final long duration = System.currentTimeMillis() - starts.get().get(event.getIdentifier());
+                    executions.computeIfAbsent(event.getIdentifier(), key -> Collections.synchronizedList(new ArrayList<>()));
+                    executions.get(event.getIdentifier()).add(duration);
+                } else {
+                    // Uncorrelated end
+                    LOGGER.warn("Received end event for event type that was not started: " + event.getIdentifier());
+                }
+            }
+        }
+    }
+
+    private Event determineEvent(final Object event) {
+        final Set<String> classesAndInterfaces = determineClassesAndInterfaces(event.getClass());
+        LOGGER.debug("Event {} implements the following classes and interface: {}", event, classesAndInterfaces);
+
+        final Event result;
+        if (classesAndInterfaces.contains("org.eclipse.aether.RepositoryEvent")) {
+            result = determineRepositoryEvent(event);
+        } else if (classesAndInterfaces.contains("org.apache.maven.execution.ExecutionEvent")) {
+            result = determineExectionEvent(event);
+        } else if (classesAndInterfaces.contains("org.apache.maven.settings.building.SettingsBuildingRequest")) {
+            result = new Event("maven:settings-building", true);
+        } else if (classesAndInterfaces.contains("org.apache.maven.settings.building.SettingsBuildingResult")) {
+            result = new Event("maven:settings-building", false);
+        } else if (classesAndInterfaces.contains("org.apache.maven.toolchain.building.ToolchainsBuildingRequest")) {
+            result = new Event("maven:toolchains-building", true);
+        } else if (classesAndInterfaces.contains("org.apache.maven.toolchain.building.ToolchainsBuildingResult")) {
+            result = new Event("maven:toolchains-building", false);
+        } else if (classesAndInterfaces.contains("org.apache.maven.project.DependencyResolutionRequest")) {
+            result = new Event("maven:dependency-resolution", true);
+        } else if (classesAndInterfaces.contains("org.apache.maven.project.DependencyResolutionResult")) {
+            result = new Event("maven:dependency-resolution", false);
+        } else if (classesAndInterfaces.contains("org.apache.maven.execution.MavenExecutionRequest")) {
+            result = new Event(null, true);
+        } else if (classesAndInterfaces.contains("org.apache.maven.execution.MavenExecutionResult")) {
+            result = new Event(null, false);
         } else {
-            unsupportedEvents.add(event.getClass().getName());
+            result = null;
+        }
+        return result;
+    }
+
+    private Set<String> determineClassesAndInterfaces(final Class<?> clazz) {
+        final Set<String> result = new HashSet<>();
+        Class<?> theClass = clazz;
+        while (theClass != null) {
+            for (final Class<?> theInterface : theClass.getInterfaces()) {
+                result.add(theInterface.getName());
+            }
+            result.add(theClass.getName());
+            theClass = theClass.getSuperclass();
+        }
+        return result;
+    }
+
+
+    private Event determineRepositoryEvent(final Object event) {
+        try {
+            final String eventType = event.getClass().getMethod("getType").invoke(event).toString();
+
+            final Event result;
+            switch (eventType) {
+                case "ARTIFACT_DOWNLOADING":
+                    result = new Event("maven:repository:artifact-download", true);
+                    break;
+                case "ARTIFACT_DOWNLOADED":
+                    result = new Event("maven:repository:artifact-download", false);
+                    break;
+                case "ARTIFACT_DEPLOYING":
+                    result = new Event("maven:repository:artifact-deployment", true);
+                    break;
+                case "ARTIFACT_DEPLOYED":
+                    result = new Event("maven:repository:artifact-deployment", false);
+                    break;
+                default:
+                    result = new Event(null, true);
+            }
+            return result;
+        } catch (ReflectiveOperationException e) {
+            // Could not determine repository event type
+            LOGGER.warn("Could not determine repository event type", e);
+            return null;
         }
     }
 
-    private void handleSettingsBuilding(final Object event) {
-        if (event instanceof SettingsBuildingRequest) {
-            startSettingsBuilding.set(System.currentTimeMillis());
-        }
-        if (event instanceof SettingsBuildingResult) {
-            final long duration = System.currentTimeMillis() - startSettingsBuilding.get();
-            register("maven:settings-building", duration);
+    private Event determineExectionEvent(Object event) {
+        try {
+            final String eventType = event.getClass().getMethod("getType").invoke(event).toString();
+
+            final Event result;
+            switch (eventType) {
+                case "MojoStarted":
+                    result = new Event(getExecutionEventIdentifier(event), true);
+                    break;
+                case "MojoSucceeded":
+                case "MojoFailed":
+                    result = new Event(getExecutionEventIdentifier(event), false);
+                    break;
+                default:
+                    result = new Event(null, true);
+            }
+            return result;
+        } catch (ReflectiveOperationException e) {
+            // Could not determine repository event type
+            LOGGER.warn("Could not determine execution event type", e);
+            return null;
         }
     }
 
-    private void handToolchainsBuilding(final Object event) {
-        if (event instanceof ToolchainsBuildingRequest) {
-            startToolchainBuilding.set(System.currentTimeMillis());
-        }
-        if (event instanceof ToolchainsBuildingResult) {
-            final long duration = System.currentTimeMillis() - startToolchainBuilding.get();
-            register("maven:toolchains-building", duration);
-        }
+    private String getExecutionEventIdentifier(Object event) throws ReflectiveOperationException {
+        Object mojoExecution = event.getClass().getMethod("getMojoExecution").invoke(event);
+        String groupId = (String) mojoExecution.getClass().getMethod("getGroupId").invoke(mojoExecution);
+        String artifactId = (String) mojoExecution.getClass().getMethod("getArtifactId").invoke(mojoExecution);
+        String goal = (String) mojoExecution.getClass().getMethod("getGoal").invoke(mojoExecution);
+        String executionId = (String) mojoExecution.getClass().getMethod("getExecutionId").invoke(mojoExecution);
+        return groupId + ":" + artifactId + ":" + goal + "@" + executionId;
     }
 
-    private void handleDependencyResolution(final Object event) {
-        if (event instanceof DependencyResolutionRequest) {
-            startDependencyResolution.set(System.currentTimeMillis());
-        }
-        if (event instanceof DependencyResolutionResult) {
-            final long duration = System.currentTimeMillis() - startDependencyResolution.get();
-            register("maven:dependency-resolution", duration);
-        }
-    }
+    private static final class Event {
+        private final String identifier;
+        private final boolean start;
 
-    private void handleRepositoryEvent(final RepositoryEvent event) {
-        if (RepositoryEvent.EventType.ARTIFACT_DOWNLOADING.equals(event.getType())) {
-            startArtifactDownloading.set(System.currentTimeMillis());
-        }
-        if (RepositoryEvent.EventType.ARTIFACT_DOWNLOADED.equals(event.getType())) {
-            final long duration = System.currentTimeMillis() - startArtifactDownloading.get();
-            register("maven:repository:artifact-download", duration);
-        }
-        if (RepositoryEvent.EventType.ARTIFACT_DEPLOYING.equals(event.getType())) {
-            startArtifactDeploying.set(System.currentTimeMillis());
-        }
-        if (RepositoryEvent.EventType.ARTIFACT_DEPLOYED.equals(event.getType())) {
-            final long duration = System.currentTimeMillis() - startArtifactDeploying.get();
-            register("maven:repository:artifact-deployment", duration);
-        }
-    }
-
-    private void handleExecutionEvent(final ExecutionEvent event) {
-        if (ExecutionEvent.Type.MojoStarted.equals(event.getType())) {
-            startMojoExecution.set(System.currentTimeMillis());
+        Event(final String identifier, final boolean start) {
+            this.identifier = identifier;
+            this.start = start;
         }
 
-        if (ExecutionEvent.Type.MojoSucceeded.equals(event.getType())
-                || ExecutionEvent.Type.MojoFailed.equals(event.getType())) {
-            final long duration = System.currentTimeMillis() - startMojoExecution.get();
-            register(event.getMojoExecution().getGroupId()
-                            + ":" + event.getMojoExecution().getArtifactId()
-                            + ":" + event.getMojoExecution().getGoal()
-                            + "@" + event.getMojoExecution().getExecutionId()
-                    , duration);
+        String getIdentifier() {
+            return identifier;
         }
-    }
 
-    private void register(final String identifier, final long duration) {
-        executions.computeIfAbsent(identifier, key -> Collections.synchronizedList(new ArrayList<>()));
-        executions.get(identifier).add(duration);
+        boolean isStart() {
+            return start;
+        }
     }
 }
