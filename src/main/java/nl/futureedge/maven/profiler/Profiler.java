@@ -126,7 +126,6 @@ public final class Profiler extends AbstractEventSpy {
 
     private Event determineEvent(final Object event) {
         final Set<String> classesAndInterfaces = determineClassesAndInterfaces(event.getClass());
-        LOGGER.debug("Event {} implements the following classes and interface: {}", event, classesAndInterfaces);
 
         final Event result;
         if (classesAndInterfaces.contains("org.eclipse.aether.RepositoryEvent")) {
@@ -171,7 +170,8 @@ public final class Profiler extends AbstractEventSpy {
 
     private Event determineRepositoryEvent(final Object event) {
         try {
-            final String eventType = event.getClass().getMethod("getType").invoke(event).toString();
+            final Class<?> repositoryClass = Class.forName("org.eclipse.aether.RepositoryEvent");
+            final String eventType = repositoryClass.getMethod("getType").invoke(event).toString();
 
             final Event result;
             switch (eventType) {
@@ -200,16 +200,17 @@ public final class Profiler extends AbstractEventSpy {
 
     private Event determineExectionEvent(Object event) {
         try {
-            final String eventType = event.getClass().getMethod("getType").invoke(event).toString();
+            final Class<?> executionEventInterface = Class.forName("org.apache.maven.execution.ExecutionEvent");
+            final String eventType = executionEventInterface.getMethod("getType").invoke(event).toString();
 
             final Event result;
             switch (eventType) {
                 case "MojoStarted":
-                    result = new Event(getExecutionEventIdentifier(event), true);
+                    result = new Event(getExecutionEventIdentifier(executionEventInterface, event), true);
                     break;
                 case "MojoSucceeded":
                 case "MojoFailed":
-                    result = new Event(getExecutionEventIdentifier(event), false);
+                    result = new Event(getExecutionEventIdentifier(executionEventInterface, event), false);
                     break;
                 default:
                     result = new Event(null, true);
@@ -222,12 +223,13 @@ public final class Profiler extends AbstractEventSpy {
         }
     }
 
-    private String getExecutionEventIdentifier(Object event) throws ReflectiveOperationException {
-        Object mojoExecution = event.getClass().getMethod("getMojoExecution").invoke(event);
-        String groupId = (String) mojoExecution.getClass().getMethod("getGroupId").invoke(mojoExecution);
-        String artifactId = (String) mojoExecution.getClass().getMethod("getArtifactId").invoke(mojoExecution);
-        String goal = (String) mojoExecution.getClass().getMethod("getGoal").invoke(mojoExecution);
-        String executionId = (String) mojoExecution.getClass().getMethod("getExecutionId").invoke(mojoExecution);
+    private String getExecutionEventIdentifier(Class<?> executionEventInterface, Object event) throws ReflectiveOperationException {
+        Object mojoExecution = executionEventInterface.getMethod("getMojoExecution").invoke(event);
+        Class<?> mojoExecutionClass = Class.forName("org.apache.maven.plugin.MojoExecution");
+        String groupId = (String) mojoExecutionClass.getMethod("getGroupId").invoke(mojoExecution);
+        String artifactId = (String) mojoExecutionClass.getMethod("getArtifactId").invoke(mojoExecution);
+        String goal = (String) mojoExecutionClass.getMethod("getGoal").invoke(mojoExecution);
+        String executionId = (String) mojoExecutionClass.getMethod("getExecutionId").invoke(mojoExecution);
         return groupId + ":" + artifactId + ":" + goal + "@" + executionId;
     }
 
